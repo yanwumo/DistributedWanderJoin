@@ -6,8 +6,10 @@
 #define DISTRIBUTEDWANDERJOIN_TABLES_H
 
 #include <vector>
+#include <unordered_map>
 #include <fstream>
 #include "entries.h"
+#include "index.h"
 
 class RegionTable {
 public:
@@ -36,13 +38,19 @@ public:
 class CustomerTable {
 public:
     std::vector<Customer> table;
+    std::unordered_map<uint32_t, Customer *> primaryKey;
+    SecondaryIndex<std::string, Customer> indexMktsegment;
     void fromStream(std::ifstream &fin);
+    void buildPrimaryKey();
+    void buildSecondaryIndexes();
 };
 
 class OrdersTable {
 public:
     std::vector<Orders> table;
+    std::unordered_map<uint32_t, Orders *> primaryKey;
     void fromStream(std::ifstream &fin);
+    void buildPrimaryKey();
 };
 
 class LineitemTable {

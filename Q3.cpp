@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "Q3.h"
+#include "tables.h"
 
 std::ifstream Q3::openTableFile(const std::string &s) {
     std::ifstream fin;
@@ -16,27 +17,6 @@ std::ifstream Q3::openTableFile(const std::string &s) {
     return fin;
 }
 
-void Q3::readCustomer(std::ifstream &fin) {
-    std::string line;
-    while (getline(fin, line)) {
-        customerTable.emplace_back(line);
-    }
-}
-
-void Q3::readOrders(std::ifstream &fin) {
-    std::string line;
-    while (getline(fin, line)) {
-        ordersTable.emplace_back(line);
-    }
-}
-
-void Q3::readLineitem(std::ifstream &fin) {
-    std::string line;
-    while (getline(fin, line)) {
-        lineitemTable.emplace_back(line);
-    }
-}
-
 void Q3::closeTableFile(std::ifstream &fin) {
     fin.close();
 }
@@ -47,19 +27,25 @@ void Q3::execute() {
     std::ifstream fin;
     std::cout << "Reading customer.tbl...";
     fin = openTableFile("../data/customer.tbl");
-    readCustomer(fin);
+    customerTable.fromStream(fin);
     closeTableFile(fin);
+    std::cout << "done" << std::endl;
+    std::cout << "Building primary key...";
+    customerTable.buildPrimaryKey();
     std::cout << "done" << std::endl;
 
     std::cout << "Reading orders.tbl...";
     fin = openTableFile("../data/orders.tbl");
-    readOrders(fin);
+    ordersTable.fromStream(fin);
     closeTableFile(fin);
+    std::cout << "done" << std::endl;
+    std::cout << "Building primary key...";
+    customerTable.buildPrimaryKey();
     std::cout << "done" << std::endl;
 
     std::cout << "Reading lineitem.tbl...";
     fin = openTableFile("../data/lineitem.tbl");
-    readLineitem(fin);
+    lineitemTable.fromStream(fin);
     closeTableFile(fin);
     std::cout << "done" << std::endl;
 }

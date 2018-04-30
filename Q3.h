@@ -9,16 +9,14 @@
 #include <fstream>
 #include <string>
 #include "entries.h"
+#include "tables.h"
 
 class Q3 {
 private:
-    std::vector<Customer> customerTable;
-    std::vector<Orders> ordersTable;
-    std::vector<Lineitem> lineitemTable;
+    CustomerTable customerTable;
+    OrdersTable ordersTable;
+    LineitemTable lineitemTable;
     std::ifstream openTableFile(const std::string &s);
-    void readCustomer(std::ifstream &fin);
-    void readOrders(std::ifstream &fin);
-    void readLineitem(std::ifstream &fin);
     void closeTableFile(std::ifstream &fin);
 
 public:
