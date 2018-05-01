@@ -39,6 +39,7 @@ class CustomerTable {
 public:
     std::vector<Customer> table;
     std::unordered_map<uint32_t, Customer *> primaryKey;
+    SecondaryIndex<uint32_t, Customer> indexNationkey;
     SecondaryIndex<std::string, Customer> indexMktsegment;
     void fromStream(std::ifstream &fin);
     void buildPrimaryKey();
@@ -49,14 +50,18 @@ class OrdersTable {
 public:
     std::vector<Orders> table;
     std::unordered_map<uint32_t, Orders *> primaryKey;
+    SecondaryIndex<uint32_t, Orders> indexCustkey;
     void fromStream(std::ifstream &fin);
     void buildPrimaryKey();
+    void buildSecondaryIndexes();
 };
 
 class LineitemTable {
 public:
     std::vector<Lineitem> table;
+    SecondaryIndex<uint32_t, Lineitem> indexOrderkey;
     void fromStream(std::ifstream &fin);
+    void buildSecondaryIndexes();
 };
 
 class PartTable {

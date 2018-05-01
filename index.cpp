@@ -3,7 +3,7 @@
 //
 
 #include "index.h"
-
+/*
 template<class K, class V>
 void SecondaryIndex<K, V>::insert(const K &key, const V &value) {
     const auto iter = map.find(key);
@@ -16,3 +16,4 @@ void SecondaryIndex<K, V>::insert(const K &key, const V &value) {
         map.insert(std::make_pair(key, entries.size() - 1));
     }
 }
+*/

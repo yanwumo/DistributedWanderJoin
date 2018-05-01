@@ -30,8 +30,9 @@ void Q3::execute() {
     customerTable.fromStream(fin);
     closeTableFile(fin);
     std::cout << "done" << std::endl;
-    std::cout << "Building primary key...";
+    std::cout << "Building indexes...";
     customerTable.buildPrimaryKey();
+    customerTable.buildSecondaryIndexes();
     std::cout << "done" << std::endl;
 
     std::cout << "Reading orders.tbl...";
@@ -39,13 +40,17 @@ void Q3::execute() {
     ordersTable.fromStream(fin);
     closeTableFile(fin);
     std::cout << "done" << std::endl;
-    std::cout << "Building primary key...";
-    customerTable.buildPrimaryKey();
+    std::cout << "Building indexes...";
+    ordersTable.buildPrimaryKey();
+    ordersTable.buildSecondaryIndexes();
     std::cout << "done" << std::endl;
 
     std::cout << "Reading lineitem.tbl...";
     fin = openTableFile("../data/lineitem.tbl");
     lineitemTable.fromStream(fin);
     closeTableFile(fin);
+    std::cout << "done" << std::endl;
+    std::cout << "Building indexes...";
+    lineitemTable.buildSecondaryIndexes();
     std::cout << "done" << std::endl;
 }

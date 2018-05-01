@@ -47,7 +47,8 @@ void CustomerTable::buildPrimaryKey() {
 }
 
 void CustomerTable::buildSecondaryIndexes() {
-    for (const Customer &c : table) {
+    for (Customer &c : table) {
+        indexNationkey.insert(c.c_nationkey, c);
         indexMktsegment.insert(c.c_mktsegment, c);
     }
 }
@@ -66,10 +67,22 @@ void OrdersTable::buildPrimaryKey() {
     }
 }
 
+void OrdersTable::buildSecondaryIndexes() {
+    for (Orders &o : table) {
+        indexCustkey.insert(o.o_custkey, o);
+    }
+}
+
 void LineitemTable::fromStream(std::ifstream &fin) {
     std::string line;
     while (getline(fin, line)) {
         table.emplace_back(line);
+    }
+}
+
+void LineitemTable::buildSecondaryIndexes() {
+    for (Lineitem &l : table) {
+        indexOrderkey.insert(l.l_orderkey, l);
     }
 }
 
