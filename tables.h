@@ -11,63 +11,56 @@
 #include "entries.h"
 #include "index.h"
 
-class RegionTable {
+template <class T>
+class BaseTable {
+protected:
+    std::vector<T> table;
+
 public:
-    std::vector<Region> table;
-    void fromStream(std::ifstream &fin);
+    void fromStream(std::ifstream &fin) {
+        std::string line;
+        while (getline(fin, line)) {
+            table.emplace_back(line);
+        }
+    }
 };
 
-class NationTable {
-public:
-    std::vector<Nation> table;
-    void fromStream(std::ifstream &fin);
+class RegionTable : public BaseTable<Region> {
 };
 
-class SupplierTable {
-public:
-    std::vector<Supplier> table;
-    void fromStream(std::ifstream &fin);
+class NationTable : public BaseTable<Nation> {
 };
 
-class PartsuppTable {
-public:
-    std::vector<Partsupp> table;
-    void fromStream(std::ifstream &fin);
+class SupplierTable : public BaseTable<Supplier> {
 };
 
-class CustomerTable {
+class PartsuppTable : public BaseTable<Partsupp> {
+};
+
+class CustomerTable : public BaseTable<Customer> {
 public:
-    std::vector<Customer> table;
-    std::unordered_map<uint32_t, Customer *> primaryKey;
+    PrimaryKey<uint32_t, Customer> indexCustkey;
     SecondaryIndex<uint32_t, Customer> indexNationkey;
     SecondaryIndex<std::string, Customer> indexMktsegment;
-    void fromStream(std::ifstream &fin);
     void buildPrimaryKey();
     void buildSecondaryIndexes();
 };
 
-class OrdersTable {
+class OrdersTable : public BaseTable<Orders> {
 public:
-    std::vector<Orders> table;
-    std::unordered_map<uint32_t, Orders *> primaryKey;
+    PrimaryKey<uint32_t, Orders> indexOrderkey;
     SecondaryIndex<uint32_t, Orders> indexCustkey;
-    void fromStream(std::ifstream &fin);
     void buildPrimaryKey();
     void buildSecondaryIndexes();
 };
 
-class LineitemTable {
+class LineitemTable : public BaseTable<Lineitem> {
 public:
-    std::vector<Lineitem> table;
     SecondaryIndex<uint32_t, Lineitem> indexOrderkey;
-    void fromStream(std::ifstream &fin);
     void buildSecondaryIndexes();
 };
 
-class PartTable {
-public:
-    std::vector<Part> table;
-    void fromStream(std::ifstream &fin);
+class PartTable : public BaseTable<Part> {
 };
 
 #endif //DISTRIBUTEDWANDERJOIN_TABLES_H

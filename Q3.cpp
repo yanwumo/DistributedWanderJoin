@@ -24,6 +24,15 @@ void Q3::closeTableFile(std::ifstream &fin) {
 void Q3::execute() {
     std::cout << "TPC-H Q3" << std::endl;
 
+    /*
+     * SELECT ONLINE
+     * SUM(l_extendedprice * (1 - l_discount)), COUNT(*)
+     * FROM customer, orders, lineitem
+     * WHERE c_mktsegment = 'BUILDING' AND c_custkey = o_custkey
+     * AND l_orderkey = o_orderkey
+     * WITHINTIME 20 CONFIDENCE 95 REPORTINTERVAL 1
+     */
+
     std::ifstream fin;
     std::cout << "Reading customer.tbl..." << std::flush;
     fin = openTableFile("../data/customer.tbl");
