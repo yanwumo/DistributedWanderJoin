@@ -25,32 +25,32 @@ void Q3::execute() {
     std::cout << "TPC-H Q3" << std::endl;
 
     std::ifstream fin;
-    std::cout << "Reading customer.tbl...";
+    std::cout << "Reading customer.tbl..." << std::flush;
     fin = openTableFile("../data/customer.tbl");
     customerTable.fromStream(fin);
     closeTableFile(fin);
     std::cout << "done" << std::endl;
-    std::cout << "Building indexes...";
+    std::cout << "Building indexes..." << std::flush;
     customerTable.buildPrimaryKey();
     customerTable.buildSecondaryIndexes();
     std::cout << "done" << std::endl;
 
-    std::cout << "Reading orders.tbl...";
+    std::cout << "Reading orders.tbl..." << std::flush;
     fin = openTableFile("../data/orders.tbl");
     ordersTable.fromStream(fin);
     closeTableFile(fin);
     std::cout << "done" << std::endl;
-    std::cout << "Building indexes...";
+    std::cout << "Building indexes..." << std::flush;
     ordersTable.buildPrimaryKey();
     ordersTable.buildSecondaryIndexes();
     std::cout << "done" << std::endl;
 
-    std::cout << "Reading lineitem.tbl...";
+    std::cout << "Reading lineitem.tbl..." << std::flush;
     fin = openTableFile("../data/lineitem.tbl");
     lineitemTable.fromStream(fin);
     closeTableFile(fin);
     std::cout << "done" << std::endl;
-    std::cout << "Building indexes...";
+    std::cout << "Building indexes..." << std::flush;
     lineitemTable.buildSecondaryIndexes();
     std::cout << "done" << std::endl;
 }
