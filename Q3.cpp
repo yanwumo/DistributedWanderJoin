@@ -94,7 +94,8 @@ void Q3::query(const double &stepTime, const double &maxTime) {
     size_t decisionStep = 0;
     do {
         numSamples++;
-        auto [success, singleStepResult] = singleStepSamplingOverAllTables();
+        auto pair = singleStepSamplingOverAllTables();
+        double singleStepResult = pair.second;
         sum += singleStepResult;
         average = sum / numSamples;
         sumSquared += singleStepResult * singleStepResult;
