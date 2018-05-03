@@ -92,6 +92,7 @@ void Q3::query(const double &stepTime, const double &maxTime) {
     double sumSquared = 0.0;
     double average = 0.0;
     size_t decisionStep = 0;
+    std::chrono::duration<double> timeSinceStart;
     do {
         numSamples++;
         auto pair = singleStepSamplingOverAllTables();
@@ -100,11 +101,13 @@ void Q3::query(const double &stepTime, const double &maxTime) {
         average = sum / numSamples;
         sumSquared += singleStepResult * singleStepResult;
 
-        if (std::chrono::duration_cast<double>(currentTime - stepStartTime) > stepTime) {
+        std::chrono::duration<double> timeSinceStep = currentTime - stepStartTime;
+        if (timeSinceStep.count() > stepTime) {
             double ci = confidenceInterval(sumSquared, sum, average, numSamples, 0.95);
             std::cout << "Confidence interval: " << ci << std::endl;
             stepStartTime = std::chrono::steady_clock::now();
         }
         currentTime = std::chrono::steady_clock::now();
-    } while (std::chrono::duration_cast<double>(currentTime - startTime) < maxTime);
+        timeSinceStart = currentTime - startTime;
+    } while (timeSinceStart.count() < maxTime);
 }
