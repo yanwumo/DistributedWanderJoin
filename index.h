@@ -86,7 +86,6 @@ public:
 
     V *sampleFromEntriesWhoseKeyEqualTo(const K &key) override;
 
-    template<class K>
     size_t getNumberOfEntriesWhoseKeyEqualTo(const K &key);
 };
 
