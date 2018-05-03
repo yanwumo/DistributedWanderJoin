@@ -86,6 +86,8 @@ public:
 
     V *sampleFromEntriesWhoseKeyEqualTo(const K &key) override;
 
+    template<class K>
+    size_t getNumberOfEntriesWhoseKeyEqualTo(const K &key);
 };
 
 template<class K, class V>
@@ -103,6 +105,19 @@ void SecondaryIndex<K, V>::insert(const K &key, V &value) {
         // Not found
         entries.push_back(std::vector<V *>{&value});
         map.insert(std::make_pair(key, entries.size() - 1));
+    }
+}
+
+template<class K, class V>
+size_t SecondaryIndex<K, V>::getNumberOfEntriesWhoseKeyEqualTo(const K &key) {
+    const auto iter = map.find(key);
+    if (iter != map.end()) {
+        // Found
+        const std::vector<V *> &result = entries[iter->second];
+        return result.size();
+    } else {
+        // Not found
+        return 0;
     }
 }
 
