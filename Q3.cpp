@@ -97,7 +97,7 @@ double Q3::singleStepSamplingOverAllTables() {
     size_t lCount = lineitemTable.indexOrderkey.getNumberOfEntriesWhoseKeyEqualTo(selectedOrderkey);
     if (l == nullptr) return 0.0;
 
-    return cCount * selectedOCount * lCount * l->l_extendedprice * (1 - l->l_discount)};
+    return cCount * selectedOCount * lCount * l->l_extendedprice * (1 - l->l_discount);
 }
 
 void Q3::query(const double &stepTime, const double &maxTime) {
