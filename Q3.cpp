@@ -104,7 +104,8 @@ void Q3::query(const double &stepTime, const double &maxTime) {
         std::chrono::duration<double> timeSinceStep = currentTime - stepStartTime;
         if (timeSinceStep.count() > stepTime) {
             double ci = confidenceInterval(sumSquared, sum, average, numSamples, 0.95);
-            std::cout << "Result: " << average << "  Confidence interval: " << ci << std::endl;
+            double displayTime = static_cast<int>(timeSinceStart.count() / stepTime) * stepTime;
+            std::cout << "Time: " << displayTime << "s" << " Result: " << average << "  Confidence interval: " << ci << std::endl;
             stepStartTime = std::chrono::steady_clock::now();
         }
         currentTime = std::chrono::steady_clock::now();
