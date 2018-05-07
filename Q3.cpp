@@ -5,6 +5,12 @@
 #include <iostream>
 #include "Q3.h"
 #include "tables.h"
+#include "mpi.h"
+
+Q3::Q3(size_t rank, size_t size) : rank(rank), size(size) {
+    auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+    randomNumberGenerator.seed(static_cast<unsigned int>(seed));
+}
 
 std::ifstream Q3::openTableFile(const std::string &s) {
     std::ifstream fin;
@@ -35,7 +41,7 @@ void Q3::execute() {
 
     std::ifstream fin;
     std::cout << "Reading customer.tbl..." << std::flush;
-    fin = openTableFile("../data/customer.tbl");
+    fin = openTableFile("~/data/customer.tbl");
     customerTable.fromStream(fin);
     closeTableFile(fin);
     std::cout << "done" << std::endl;
@@ -45,7 +51,7 @@ void Q3::execute() {
     std::cout << "done" << std::endl;
 
     std::cout << "Reading orders.tbl..." << std::flush;
-    fin = openTableFile("../data/orders.tbl");
+    fin = openTableFile("~/data/orders.tbl");
     ordersTable.fromStream(fin);
     closeTableFile(fin);
     std::cout << "done" << std::endl;
@@ -55,7 +61,7 @@ void Q3::execute() {
     std::cout << "done" << std::endl;
 
     std::cout << "Reading lineitem.tbl..." << std::flush;
-    fin = openTableFile("../data/lineitem.tbl");
+    fin = openTableFile("~/data/lineitem.tbl");
     lineitemTable.fromStream(fin);
     closeTableFile(fin);
     std::cout << "done" << std::endl;
@@ -67,20 +73,31 @@ void Q3::execute() {
     query(0.1, 20);
 }
 
-std::pair<bool, double> Q3::singleStepSamplingOverAllTables() {
+double Q3::singleStepSamplingOverAllTables() {
     // The current best order is {0, 1, 2}
+    uint32_t buf[2 * size];
 
     // Sample from customer - orders - lineitem
     Customer *c = customerTable.sampleFromAllEntries();
     size_t cCount = customerTable.size();
-    Orders *o = ordersTable.indexCustkey.sampleFromEntriesWhoseKeyEqualTo(c->c_custkey);
-    size_t oCount = ordersTable.indexCustkey.getNumberOfEntriesWhoseKeyEqualTo(c->c_custkey);
-    if (o == nullptr) return {false, 0.0};
-    Lineitem *l = lineitemTable.indexOrderkey.sampleFromEntriesWhoseKeyEqualTo(o->o_orderkey);
-    size_t lCount = lineitemTable.indexOrderkey.getNumberOfEntriesWhoseKeyEqualTo(o->o_orderkey);
-    if (l == nullptr) return {false, 0.0};
+    MPI_Allgather(&c->c_custkey, 1, MPI_UINT32_T, buf, 1, MPI_UINT32_T, MPI_COMM_WORLD);
 
-    return {true, cCount * oCount * lCount * l->l_extendedprice * (1 - l->l_discount)};
+    uint32_t selectedCustkey = buf[getRandomNumberOfSize(size)];
+    Orders *o = ordersTable.indexCustkey.sampleFromEntriesWhoseKeyEqualTo(selectedCustkey);
+    size_t oCount = ordersTable.indexCustkey.getNumberOfEntriesWhoseKeyEqualTo(selectedCustkey);
+    uint32_t tmp[2];
+    tmp[0] = o != nullptr ? o->o_orderkey : UINT32_MAX;
+    tmp[1] = static_cast<uint32_t>(oCount);
+    MPI_Allgather(tmp, 2, MPI_UINT32_T, buf, 2, MPI_UINT32_T, MPI_COMM_WORLD);
+
+    size_t index = getRandomNumberOfSize(size);
+    uint32_t selectedOrderkey = buf[2 * index];
+    uint32_t selectedOCount = buf[2 * index + 1];
+    Lineitem *l = lineitemTable.indexOrderkey.sampleFromEntriesWhoseKeyEqualTo(selectedOrderkey);
+    size_t lCount = lineitemTable.indexOrderkey.getNumberOfEntriesWhoseKeyEqualTo(selectedOrderkey);
+    if (l == nullptr) return 0.0;
+
+    return cCount * selectedOCount * lCount * l->l_extendedprice * (1 - l->l_discount)};
 }
 
 void Q3::query(const double &stepTime, const double &maxTime) {
@@ -94,15 +111,19 @@ void Q3::query(const double &stepTime, const double &maxTime) {
     size_t decisionStep = 0;
     std::chrono::duration<double> timeSinceStart;
     do {
-        numSamples++;
-        auto pair = singleStepSamplingOverAllTables();
-        double singleStepResult = pair.second;
-        sum += singleStepResult;
+        numSamples += size;
+        double singleStepResult = singleStepSamplingOverAllTables();
+        double buf[size];
+        MPI_Gather(&singleStepResult, 1, MPI_DOUBLE, buf, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+        for (int i = 0; i < size; i++) {
+            sum += buf[i];
+            sumSquared += buf[i] * buf[i];
+        }
         average = sum / numSamples;
-        sumSquared += singleStepResult * singleStepResult;
 
         std::chrono::duration<double> timeSinceStep = currentTime - stepStartTime;
-        if (timeSinceStep.count() > stepTime) {
+        if (rank == 0 && timeSinceStep.count() > stepTime) {
             double ci = confidenceInterval(sumSquared, sum, average, numSamples, 0.95);
             std::cout << "Result: " << average << "  Confidence interval: " << ci << std::endl;
             stepStartTime = std::chrono::steady_clock::now();

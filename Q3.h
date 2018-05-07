@@ -14,6 +14,9 @@
 
 class Q3 {
 private:
+    std::mt19937 randomNumberGenerator;
+    size_t rank, size;
+
     CustomerTable customerTable;
     OrdersTable ordersTable;
     LineitemTable lineitemTable;
@@ -49,10 +52,17 @@ private:
         return ci;
     }
 
+    size_t getRandomNumberOfSize(const size_t &size) {
+        std::uniform_int_distribution<size_t> distribution(0, size - 1);
+        return distribution(randomNumberGenerator);
+    }
+
 public:
+    Q3(size_t rank, size_t size);
+
     void execute();
 
-    std::pair<bool, double> singleStepSamplingOverAllTables();
+    double singleStepSamplingOverAllTables();
 
     void query(const double &stepTime, const double &maxTime);
 };
