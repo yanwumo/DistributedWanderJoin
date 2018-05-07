@@ -79,7 +79,7 @@ double Q3::singleStepSamplingOverAllTables() {
 
     // Sample from customer - orders - lineitem
     Customer *c = customerTable.sampleFromAllEntries();
-    size_t cCount = customerTable.size();
+    size_t cCount = customerTable.size() * size;
     MPI_Allgather(&c->c_custkey, 1, MPI_UINT32_T, buf, 1, MPI_UINT32_T, MPI_COMM_WORLD);
 
     uint32_t selectedCustkey = buf[getRandomNumberOfSize(size)];
@@ -92,9 +92,9 @@ double Q3::singleStepSamplingOverAllTables() {
 
     size_t index = getRandomNumberOfSize(size);
     uint32_t selectedOrderkey = buf[2 * index];
-    uint32_t selectedOCount = buf[2 * index + 1];
+    size_t selectedOCount = buf[2 * index + 1] * size;
     Lineitem *l = lineitemTable.indexOrderkey.sampleFromEntriesWhoseKeyEqualTo(selectedOrderkey);
-    size_t lCount = lineitemTable.indexOrderkey.getNumberOfEntriesWhoseKeyEqualTo(selectedOrderkey);
+    size_t lCount = lineitemTable.indexOrderkey.getNumberOfEntriesWhoseKeyEqualTo(selectedOrderkey) * size;
     if (l == nullptr) return 0.0;
 
     return cCount * selectedOCount * lCount * l->l_extendedprice * (1 - l->l_discount);
@@ -125,7 +125,8 @@ void Q3::query(const double &stepTime, const double &maxTime) {
         std::chrono::duration<double> timeSinceStep = currentTime - stepStartTime;
         if (rank == 0 && timeSinceStep.count() > stepTime) {
             double ci = confidenceInterval(sumSquared, sum, average, numSamples, 0.95);
-            std::cout << "Result: " << average << "  Confidence interval: " << ci << std::endl;
+            double displayTime = static_cast<int>(timeSinceStart.count() / stepTime) * stepTime;
+            std::cout << "Time: " << displayTime << "s" << " Result: " << average << "  Confidence interval: " << ci << std::endl;
             stepStartTime = std::chrono::steady_clock::now();
         }
         currentTime = std::chrono::steady_clock::now();
