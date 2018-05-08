@@ -4,7 +4,7 @@ Distributed Wander Join
 ## Prerequisites
 
 * CMake
-
+* Boost
 * OpenMPI (Other MPI versions may have different CMake flags, but they should work)
 
 ## Build
